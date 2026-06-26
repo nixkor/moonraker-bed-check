@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Editor / OS cruft
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Secrets & runtime artifacts (never commit these)
+.anthropic_api_key
+*.bak
+*.bedcheck.*.bak
+bed_check_snapshots/
+
+# Windows-only pscp deploy helper — the Pi installs via `git clone` + install.sh
+deploy-bed-check-raspberrypi.bat
+
+# Local prompt-tuning scratch tools (run SYSTEM_PROMPT against a saved snapshot)
+_promptcheck.py
+_fliptest.py

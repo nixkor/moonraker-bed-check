@@ -1,0 +1,4 @@
+# This repo is cloned to a Linux Pi. Normalize all text files to LF on checkout
+# so a Windows working copy never ships CRLFs that break the install.sh shebang
+# or Klipper/Moonraker config parsing.
+* text=auto eol=lf

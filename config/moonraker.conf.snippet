@@ -1,0 +1,48 @@
+# Reference for the [bed_check] section. install.sh writes this for you with your
+# real home path; if you append it by hand, replace /home/pi with your own home dir.
+# Append to ~/printer_data/config/moonraker.conf and restart Moonraker.
+#
+# API key: prefer NOT to inline it here (moonraker.conf is world-ish readable and
+# often synced). Use anthropic_api_key_path or the ANTHROPIC_API_KEY env var on
+# the moonraker service instead. Resolution order is:
+#   anthropic_api_key  ->  anthropic_api_key_path (file)  ->  ANTHROPIC_API_KEY (env)
+
+[bed_check]
+# anthropic_api_key: sk-ant-...                       # discouraged; see note above
+anthropic_api_key_path: /home/pi/.anthropic_api_key   # chmod 600 this file
+# Opus 4.8 is the default — most reliable on tricky beds (handling tabs, parked
+# toolhead, lens-curved plate edges). claude-sonnet-4-6 is cheaper and usually
+# fine on a well-lit, upright camera. Haiku proved too weak for the bed check.
+model: claude-opus-4-8
+max_tokens: 1024
+# Keep request_timeout < the CHECK_BED dwell WINDOW (default 25s) so a hung API
+# call fails-closed and cancels before the dwell releases into homing. Ordering:
+#   request_timeout (20)  <  dwell WINDOW (25)  <  delayed_gcode dead-man (60)
+request_timeout: 20
+
+# Behavior
+enabled_default: True      # state on first boot before any toggle is persisted
+fail_open: False           # FALSE = fail-closed: cancel the print if the AI call errors
+
+# Optional site-specific addendum to the system prompt. Use it to give the model
+# context unique to YOUR camera/printer -- e.g. point out a permanent fixture in
+# the frame so it isn't mistaken for a part. It is appended as clarifying context:
+# it refines the prompt but cannot override the safety rules or the JSON schema,
+# and it is echoed back in /server/bed_check/status (extra_prompt) so you can
+# confirm what was sent. For multiple lines, indent the continuation lines:
+# extra_system_prompt: The grey clip at the back-left corner is a permanent cable
+#   guide, not a part left on the bed. The blue tape strip on the front edge is a
+#   label, not debris.
+
+# Snapshot source.
+# Leave snapshot_url unset to auto-discover via Moonraker's webcam list (recommended).
+# Set it explicitly to skip discovery (then orientation metadata is unavailable):
+# snapshot_url: http://localhost/webcam/?action=snapshot
+# webcam_name: default     # pick a specific cam if you have more than one
+# moonraker_url: http://localhost:7125   # only if Moonraker isn't on the default port
+orient_snapshot: True      # corrects an inverted/rotated camera -- matters for detection, not cosmetic; uses Pillow (a Moonraker dep). No-op if the cam reports no flip/rotation.
+
+# Snapshot review: keep the last N oriented frames on disk; serve the latest at
+# GET /server/bed_check/last_snapshot.
+snapshot_save_dir: /home/pi/printer_data/bed_check_snapshots
+snapshot_keep: 5
